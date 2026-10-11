@@ -15,9 +15,11 @@ import {
 
 import { Button } from "@/components/ui/button";
 import api from "@/services/api";
+import { useAuth } from "@/context/AuthContext";
 
 function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -54,23 +56,14 @@ function Login() {
 
       console.log("Login successful:", response.data);
 
-      // Save JWT token
-      localStorage.setItem(
-        "devstack_token",
-        response.data.token
-      );
-
-      // Save logged-in user
-      localStorage.setItem(
-        "devstack_user",
-        JSON.stringify(response.data.user)
-      );
+      // Update AuthContext state and persist to localStorage
+      login(response.data.token, response.data.user);
 
       setSuccessMessage("Login successful!");
 
-      // Redirect to dashboard/home
+      // Redirect to questions
       setTimeout(() => {
-        navigate("/");
+        navigate("/questions");
       }, 800);
     } catch (error) {
       console.error("Login failed:", error);

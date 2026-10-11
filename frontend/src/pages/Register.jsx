@@ -16,9 +16,11 @@ import {
 
 import { Button } from "@/components/ui/button";
 import api from "@/services/api";
+import { useAuth } from "@/context/AuthContext";
 
 function Register() {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -65,16 +67,8 @@ function Register() {
         response.data
       );
 
-      // Save authentication data
-      localStorage.setItem(
-        "devstack_token",
-        response.data.token
-      );
-
-      localStorage.setItem(
-        "devstack_user",
-        JSON.stringify(response.data.user)
-      );
+      // Update AuthContext state and persist to localStorage
+      login(response.data.token, response.data.user);
 
       setSuccessMessage(
         "Account created successfully!"
@@ -88,9 +82,9 @@ function Register() {
         password: "",
       });
 
-      // Redirect to home
+      // Redirect to questions
       setTimeout(() => {
-        navigate("/");
+        navigate("/questions");
       }, 800);
     } catch (error) {
       console.error(

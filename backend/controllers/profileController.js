@@ -14,28 +14,38 @@ const getMyProfile = async (req, res) => {
   try {
     const userId = req.user.userId;
 
-    // Find the user's profile
-    const profile = await populateUser(
-      Profile.findOne({
-        user: userId,
-      })
-    );
+    // Run all queries in parallel for efficiency
+    const [
+      profile,
+      questionCount,
+      answerCount,
+      acceptedAnswerCount,
+      questions,
+      answers,
+    ] = await Promise.all([
+      // Find the user's profile
+      populateUser(Profile.findOne({ user: userId })),
 
-    // Count questions created by this user
-    const questionCount = await Question.countDocuments({
-      author: userId,
-    });
+      // Count questions created by this user
+      Question.countDocuments({ author: userId }),
 
-    // Count answers created by this user
-    const answerCount = await Answer.countDocuments({
-      author: userId,
-    });
+      // Count answers created by this user
+      Answer.countDocuments({ author: userId }),
 
-    // Count accepted answers created by this user
-    const acceptedAnswerCount = await Answer.countDocuments({
-      author: userId,
-      isAccepted: true,
-    });
+      // Count accepted answers created by this user
+      Answer.countDocuments({ author: userId, isAccepted: true }),
+
+      // Fetch the user's question documents
+      Question.find({ author: userId })
+        .select("title tags upvotes downvotes views createdAt")
+        .sort({ createdAt: -1 }),
+
+      // Fetch the user's answer documents, with the parent question title
+      Answer.find({ author: userId })
+        .select("content question isAccepted upvotes downvotes createdAt")
+        .populate("question", "title")
+        .sort({ createdAt: -1 }),
+    ]);
 
     res.status(200).json({
       profile: profile || null,
@@ -45,6 +55,9 @@ const getMyProfile = async (req, res) => {
         answers: answerCount,
         accepted: acceptedAnswerCount,
       },
+
+      questions,
+      answers,
     });
   } catch (error) {
     console.error("GET PROFILE ERROR:", error);

@@ -14,6 +14,9 @@ import ProfileSkeleton from "../components/profile/ProfileSkeleton";
 
 function Profile() {
   const [profile, setProfile] = useState(null);
+  const [stats, setStats] = useState({ questions: 0, answers: 0, accepted: 0 });
+  const [questions, setQuestions] = useState([]);
+  const [answers, setAnswers] = useState([]);
 
   const [loading, setLoading] =
     useState(true);
@@ -30,6 +33,9 @@ function Profile() {
         const data = await getMyProfile();
 
         setProfile(data.profile);
+        setStats(data.stats ?? { questions: 0, answers: 0, accepted: 0 });
+        setQuestions(data.questions ?? []);
+        setAnswers(data.answers ?? []);
       } catch (error) {
         console.error(
           "Failed to load profile:",
@@ -99,11 +105,11 @@ function Profile() {
 
   const user = profile?.user;
 
-  const stats = {
+  const profileStats = {
     reputation: user?.reputation ?? 0,
-    questions: 0,
-    answers: 0,
-    accepted: 0,
+    questions: stats.questions,
+    answers: stats.answers,
+    accepted: stats.accepted,
   };
 
   return (
@@ -119,7 +125,7 @@ function Profile() {
         />
 
         {/* Stats */}
-        <ProfileStats stats={stats} />
+        <ProfileStats stats={profileStats} />
 
         {/* Main content */}
         <div className="grid gap-6 lg:grid-cols-3">
@@ -141,8 +147,8 @@ function Profile() {
             />
 
             <ActivityTabs
-              questions={[]}
-              answers={[]}
+              questions={questions}
+              answers={answers}
             />
           </div>
 

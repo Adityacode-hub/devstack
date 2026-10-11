@@ -6,6 +6,7 @@ import {
 } from "react-router-dom";
 
 import AppLayout from "./layouts/AppLayout";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -24,40 +25,48 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* Application routes */}
+        {/* Protected application routes */}
         <Route
           path="/questions"
           element={
-            <AppLayout>
-              <Questions />
-            </AppLayout>
+            <ProtectedRoute>
+              <AppLayout>
+                <Questions />
+              </AppLayout>
+            </ProtectedRoute>
           }
         />
 
         <Route
           path="/questions/ask"
           element={
-            <AppLayout>
-              <AskQuestion />
-            </AppLayout>
+            <ProtectedRoute>
+              <AppLayout>
+                <AskQuestion />
+              </AppLayout>
+            </ProtectedRoute>
           }
         />
 
         <Route
           path="/questions/:id"
           element={
-            <AppLayout>
-              <QuestionDetail />
-            </AppLayout>
+            <ProtectedRoute>
+              <AppLayout>
+                <QuestionDetail />
+              </AppLayout>
+            </ProtectedRoute>
           }
         />
 
         <Route
           path="/profile"
           element={
-            <AppLayout>
-              <Profile />
-            </AppLayout>
+            <ProtectedRoute>
+              <AppLayout>
+                <Profile />
+              </AppLayout>
+            </ProtectedRoute>
           }
         />
 
