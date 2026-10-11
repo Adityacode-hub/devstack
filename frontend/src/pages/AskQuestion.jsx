@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Send } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import api from "@/services/api";
+import { createQuestion } from "@/services/questionService";
 
 function AskQuestion() {
   const navigate = useNavigate();
@@ -49,19 +49,13 @@ function AskQuestion() {
         .map((tag) => tag.trim().toLowerCase())
         .filter(Boolean);
 
-      const response = await api.post("/questions", {
-        title: formData.title.trim(),
-        description: formData.description.trim(),
+      const data = await createQuestion(
+        formData.title.trim(),
+        formData.description.trim(),
         tags,
-      });
-
-      console.log(
-        "Question created:",
-        response.data
       );
 
-      const questionId =
-        response.data.question?._id;
+      const questionId = data.question?._id;
 
       if (questionId) {
         navigate(`/questions/${questionId}`);

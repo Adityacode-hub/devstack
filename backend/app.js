@@ -14,8 +14,10 @@ const app = express();
 
 connectDB();
 
-app.use(cors());
-app.use(express.json());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || "http://localhost:5173",
+}));
+app.use(express.json({ limit: "50kb" }));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/questions", questionRoutes);

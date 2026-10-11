@@ -14,6 +14,7 @@ import Questions from "./pages/Questions";
 import AskQuestion from "./pages/AskQuestion";
 import QuestionDetail from "./pages/QuestionDetail";
 import Profile from "./pages/Profile";
+import Tags from "./pages/Tags";
 
 function App() {
   return (
@@ -65,6 +66,17 @@ function App() {
             <ProtectedRoute>
               <AppLayout>
                 <Profile />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/tags"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Tags />
               </AppLayout>
             </ProtectedRoute>
           }

@@ -19,4 +19,18 @@ api.interceptors.request.use(
   }
 );
 
+// H-5: on 401, clear stale auth state and redirect to login.
+// Handles token expiry mid-session without leaving the user stuck.
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem("devstack_token");
+      localStorage.removeItem("devstack_user");
+      window.location.href = "/login";
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default api;

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { getMyProfile } from "../services/profileService";
 
@@ -13,44 +14,47 @@ import ActivityTabs from "../components/profile/ActivityTabs";
 import ProfileSkeleton from "../components/profile/ProfileSkeleton";
 
 function Profile() {
+  const navigate = useNavigate();
+
   const [profile, setProfile] = useState(null);
   const [stats, setStats] = useState({ questions: 0, answers: 0, accepted: 0 });
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState([]);
+  const [profileExists, setProfileExists] = useState(true);
 
-  const [loading, setLoading] =
-    useState(true);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const [error, setError] =
-    useState("");
+  const fetchProfile = async () => {
+    try {
+      setLoading(true);
+      setError("");
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        setLoading(true);
-        setError("");
+      const data = await getMyProfile();
 
-        const data = await getMyProfile();
-
+      // The API returns { profile: null } with 200 when no profile
+      // has been created yet — not a 404. Check the value, not the
+      // error message, so the "not created" state is always reachable.
+      if (data.profile === null) {
+        setProfileExists(false);
+      } else {
+        setProfileExists(true);
         setProfile(data.profile);
         setStats(data.stats ?? { questions: 0, answers: 0, accepted: 0 });
         setQuestions(data.questions ?? []);
         setAnswers(data.answers ?? []);
-      } catch (error) {
-        console.error(
-          "Failed to load profile:",
-          error
-        );
-
-        setError(
-          error.response?.data?.message ||
-            "Failed to load profile."
-        );
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (err) {
+      console.error("Failed to load profile:", err);
+      setError(
+        err.response?.data?.message || "Failed to load profile."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchProfile();
   }, []);
 
@@ -64,7 +68,9 @@ function Profile() {
     );
   }
 
-  if (error === "Profile not found") {
+  // API returns { profile: null } with 200 for users who haven't
+  // created a profile yet — this check is always reachable.
+  if (!loading && !error && !profileExists) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-slate-950 px-6 text-white">
         <div className="max-w-md text-center">
@@ -95,9 +101,37 @@ function Profile() {
 
   if (error) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-slate-950 px-6">
-        <div className="rounded-2xl border border-red-400/10 bg-red-500/5 px-6 py-5 text-sm text-red-400">
-          {error}
+      <main className="flex min-h-screen items-center justify-center bg-slate-950 px-6 text-white">
+        <div className="w-full max-w-md rounded-2xl border border-red-400/10 bg-red-500/5 p-8 text-center">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-red-400/20 bg-red-500/10 text-2xl">
+            ⚠️
+          </div>
+
+          <h2 className="mt-5 text-lg font-semibold">
+            Failed to load profile
+          </h2>
+
+          <p className="mt-2 text-sm text-red-400">
+            {error}
+          </p>
+
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+            <button
+              type="button"
+              onClick={fetchProfile}
+              className="rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-slate-200"
+            >
+              Try Again
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigate("/questions")}
+              className="rounded-xl border border-white/10 px-5 py-2.5 text-sm font-medium text-slate-400 transition hover:border-white/20 hover:text-white"
+            >
+              Back to Questions
+            </button>
+          </div>
         </div>
       </main>
     );

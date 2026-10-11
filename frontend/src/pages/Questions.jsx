@@ -1,16 +1,21 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import {
   MessageSquare,
   Eye,
   ThumbsUp,
   Plus,
+  Hash,
+  AlertCircle,
 } from "lucide-react";
 
 import { getQuestions } from "@/services/questionService";
 import { Button } from "@/components/ui/button";
 
 function Questions() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTag = searchParams.get("tag") || "";
+
   const [questions, setQuestions] = useState([]);
   const [pagination, setPagination] = useState(null);
 
@@ -22,10 +27,10 @@ function Questions() {
       setIsLoading(true);
       setErrorMessage("");
 
-      const data = await getQuestions({
-        page: 1,
-        limit: 10,
-      });
+      const params = { page: 1, limit: 10 };
+      if (activeTag) params.search = activeTag;
+
+      const data = await getQuestions(params);
 
       setQuestions(data.questions || []);
       setPagination(data.pagination || null);
@@ -43,7 +48,7 @@ function Questions() {
 
   useEffect(() => {
     fetchQuestions();
-  }, []);
+  }, [activeTag]);
 
   return (
     <div className="min-h-screen bg-[#050505] text-white">
@@ -60,6 +65,23 @@ function Questions() {
             <p className="mt-1 text-sm text-zinc-500">
               Explore questions from the developer community.
             </p>
+
+            {/* Active tag filter indicator */}
+            {activeTag && (
+              <div className="mt-3 flex items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-400/20 bg-indigo-500/10 px-2.5 py-1 text-xs font-medium text-indigo-300">
+                  <Hash className="h-3 w-3" />
+                  {activeTag}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSearchParams({})}
+                  className="text-xs text-zinc-500 transition hover:text-zinc-300"
+                >
+                  Clear filter ✕
+                </button>
+              </div>
+            )}
           </div>
 
           <Link to="/questions/ask">
@@ -87,8 +109,10 @@ function Questions() {
 
         {/* Error */}
         {!isLoading && errorMessage && (
-          <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-6 text-center">
-            <p className="text-red-300">
+          <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-8 text-center">
+            <AlertCircle className="mx-auto mb-3 h-8 w-8 text-red-400" />
+
+            <p className="text-sm text-red-300">
               {errorMessage}
             </p>
 
@@ -107,15 +131,39 @@ function Questions() {
           questions.length === 0 && (
             <div className="flex min-h-[300px] flex-col items-center justify-center rounded-2xl border border-white/10 bg-white/[0.02] text-center">
 
-              <MessageSquare className="mb-4 h-10 w-10 text-zinc-600" />
+              {activeTag ? (
+                <>
+                  <Hash className="mb-4 h-10 w-10 text-zinc-600" />
 
-              <h2 className="text-xl font-semibold">
-                No questions yet
-              </h2>
+                  <h2 className="text-xl font-semibold">
+                    No questions tagged &ldquo;{activeTag}&rdquo;
+                  </h2>
 
-              <p className="mt-2 text-sm text-zinc-500">
-                Be the first developer to ask a question.
-              </p>
+                  <p className="mt-2 text-sm text-zinc-500">
+                    No one has asked a question with this tag yet.
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={() => setSearchParams({})}
+                    className="mt-5 rounded-xl border border-white/10 px-5 py-2.5 text-sm font-medium text-zinc-400 transition hover:border-white/20 hover:text-white"
+                  >
+                    Clear filter
+                  </button>
+                </>
+              ) : (
+                <>
+                  <MessageSquare className="mb-4 h-10 w-10 text-zinc-600" />
+
+                  <h2 className="text-xl font-semibold">
+                    No questions yet
+                  </h2>
+
+                  <p className="mt-2 text-sm text-zinc-500">
+                    Be the first developer to ask a question.
+                  </p>
+                </>
+              )}
 
             </div>
           )}

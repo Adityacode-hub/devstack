@@ -54,8 +54,6 @@ function Login() {
         password: formData.password,
       });
 
-      console.log("Login successful:", response.data);
-
       // Update AuthContext state and persist to localStorage
       login(response.data.token, response.data.user);
 

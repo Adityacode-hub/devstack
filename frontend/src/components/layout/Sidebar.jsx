@@ -1,5 +1,6 @@
 import {
   Bookmark,
+  Hash,
   Home,
   Plus,
   UserRound,
@@ -16,6 +17,11 @@ const navigation = [
         name: "Questions",
         path: "/questions",
         icon: Home,
+      },
+      {
+        name: "Tags",
+        path: "/tags",
+        icon: Hash,
       },
     ],
   },
